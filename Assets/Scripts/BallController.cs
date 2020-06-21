@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using UnityEngine.SceneManagement;
 
 public class BallController : MonoBehaviour
 {
@@ -25,7 +26,10 @@ public class BallController : MonoBehaviour
         CheckInput();    
     }
 
-
+    private void FixedUpdate()
+    {
+        
+    }
 
     private void CheckInput()
     {
@@ -70,6 +74,35 @@ public class BallController : MonoBehaviour
     private void OnCollisionExit(Collision other)
     {
         _isGrounded = false;
+        bool hasCollidedWithEnemy = other.collider.GetComponent<Enemy>();
+        if (hasCollidedWithEnemy)
+        {
+            //Mathf.Infinity  ile raycast bi objeye dokunana kadar yapabilirsiniz.
+            
+            if (Physics.Raycast(transform.position, Vector3.down,out  RaycastHit hit , Mathf.Infinity))
+            {
+                Enemy enemy = hit.collider.GetComponent<Enemy>();
+                bool isOnTopOfEnemy = enemy;
+
+                if (isOnTopOfEnemy)
+                {
+                    enemy.Die();
+                }
+                else
+                {
+                    Die();
+                }
+
+
+
+
+
+                //  ? işareti if gibi kullanılıyor burada null olabilir nullsa dokunma anlamında 
+                //hit.collider.GetComponent<Enemy>()?.Die();
+            }
+            Debug.DrawRay(transform.position, Vector3.down *0.1f, Color.blue ,3f );
+        }
+        
     }
 
 
@@ -81,5 +114,23 @@ public class BallController : MonoBehaviour
         {
             collectible.Collect();
         }
+    }
+    
+    private void Die()
+    {
+
+        StartCoroutine(ChangeScene());
+        //destroy kullanırsan ienumerator çalışmıyor ondan 
+        //Destroy(gameObject);
+        GetComponent<MeshRenderer>().enabled = false;
+
+    }
+
+    private IEnumerator ChangeScene()
+    {
+        
+        yield return  new  WaitForSeconds(1f);
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
