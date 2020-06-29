@@ -74,35 +74,36 @@ public class BallController : MonoBehaviour
     private void OnCollisionExit(Collision other)
     {
         _isGrounded = false;
-        bool hasCollidedWithEnemy = other.collider.GetComponent<Enemy>();
-        if (hasCollidedWithEnemy)
-        {
-            //Mathf.Infinity  ile raycast bi objeye dokunana kadar yapabilirsiniz.
-            
-            if (Physics.Raycast(transform.position, Vector3.down,out  RaycastHit hit , Mathf.Infinity))
-            {
-                Enemy enemy = hit.collider.GetComponent<Enemy>();
-                bool isOnTopOfEnemy = enemy;
-
-                if (isOnTopOfEnemy)
-                {
-                    enemy.Die();
-                }
-                else
-                {
-                    Die();
-                }
-
-
-
-
-
-                //  ? işareti if gibi kullanılıyor burada null olabilir nullsa dokunma anlamında 
-                //hit.collider.GetComponent<Enemy>()?.Die();
-            }
-            Debug.DrawRay(transform.position, Vector3.down *0.1f, Color.blue ,3f );
-        }
         
+        //Mathf.Infinity  ile raycast bi objeye dokunana kadar yapabilirsiniz.
+
+        CheckEnemyCollision(other);
+        
+        //  ? işareti if gibi kullanılıyor burada null olabilir nullsa dokunma anlamında 
+        //hit.collider.GetComponent<Enemy>()?.Die();
+                
+       
+
+    }
+
+    private void CheckEnemyCollision(Collision collision)
+    {
+        bool hasCollidedWithEnemy = collision.collider.GetComponent<Enemy>();
+        if (!hasCollidedWithEnemy) return;
+        
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, Mathf.Infinity))
+        {
+            Enemy enemy = hit.collider.GetComponent<Enemy>();
+            bool isOnTopOfEnemy = enemy;
+
+            if (isOnTopOfEnemy)
+            {
+                enemy.Die();
+                return;
+            }
+        }
+
+        Die();
     }
 
 
@@ -118,19 +119,13 @@ public class BallController : MonoBehaviour
     
     private void Die()
     {
-
-        StartCoroutine(ChangeScene());
+        FindObjectOfType<LevelManager>().ChangeScene();
+        
         //destroy kullanırsan ienumerator çalışmıyor ondan 
         //Destroy(gameObject);
         GetComponent<MeshRenderer>().enabled = false;
 
     }
 
-    private IEnumerator ChangeScene()
-    {
-        
-        yield return  new  WaitForSeconds(1f);
-
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
+   
 }
